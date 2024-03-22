@@ -17,4 +17,3 @@ def test_create_table():
         result = cursor.fetchone()
         assert result[0] == 'meteo_forecast'
     conn.close()
-
