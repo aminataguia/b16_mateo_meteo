@@ -98,6 +98,7 @@ print("Fin de la connexion")
 # j'aimerais bien convertir le language sql en python 
 <<<<<<< Updated upstream
 # je souhaite separer mon code on plusieur fichier qui sapelle 
+<<<<<<< Updated upstream
 # mettre a jour toute les 4-6 heure condition qui verifie que les taches planifier sont deja crée les chrone en fonctions de l'environnement ou il est 
 <<<<<<< Updated upstream:recup.py
         
@@ -110,4 +111,10 @@ print("Fin de la connexion")
 # mettre a jour toute les 4-6 heure condition qui verifie que les taches planifier sont deja crée les chrone en fonctions de l'environnement ou il est 
 # ajout du bulletin meteo
 # ajout de la voix  
+>>>>>>> Stashed changes
+=======
+# mettre a jour toute les 1 jours et condition qui verifie que les taches planifier sont deja crée les chrone en fonctions de l'environnement ou il est ok
+# ajout du bulletin meteo ok 
+# ajout de la voix  ok
+# je veux que le bulletin meteo se base sur la data a jours et que l'on ai juste a donner la ville pour obtenir le bulletin 
 >>>>>>> Stashed changes

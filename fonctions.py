@@ -55,6 +55,7 @@ def inserer_donnes(conn, city_name, dt, min_temp, max_temp, min_humidity, max_hu
         except Exception as e:
             print(f"Erreur lors de l'insertion des données pour {city_name}: {e}")
 
+
 import psycopg2
 
 def get_weather_data(city_name):
@@ -70,3 +71,24 @@ def get_weather_data(city_name):
         result = cursor.fetchone()
     conn.close()
     return result
+
+
+def request_data(cursor):
+    cursor.execute("""
+CREATE TABLE IF NOT EXISTS meteo_forecast (
+    id SERIAL PRIMARY KEY,
+    city_name VARCHAR(255),
+    dt BIGINT,
+    min_temp DOUBLE PRECISION,
+    max_temp DOUBLE PRECISION,
+    min_humidity INTEGER,
+    max_humidity INTEGER,
+    precipitation DOUBLE PRECISION,
+    uv INTEGER,
+    weather_icon VARCHAR(255),
+    weather_desc VARCHAR(255),
+    sunrise BIGINT,
+    sunset BIGINT
+);
+""")
+>>>>>>> Stashed changes
