@@ -1,7 +1,7 @@
 import psycopg2
 
 from connexion import host, port, password, user, dbname
-from recup import create_table
+from main import create_table
 
 def test_create_table():
     conn = psycopg2.connect(
