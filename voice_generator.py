@@ -7,7 +7,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from meteofrance_api import MeteoFranceClient
 import base64
 
-from fonctions import get_weather_data
 from villes import cities, meteo
 
 app = FastAPI()
@@ -75,47 +74,6 @@ def text_to_speech():
 
 text_to_speech()
 
-# URL de l'API
-url = "https://api.edenai.run/v2/audio/text_to_speech"
-payload = {
-    "providers": "google,amazon", "language": "en-US",
-    "option": "MALE",
-    "text": "this is a test",
-    "fallback_providers": ""
-}
-response = requests.post(url, json=payload, headers=headers)
-
-result = json.loads(response.text)
-encoded = base64.b64encode(result)
-print(encoded)
-encoded
-print(result['google']['audio'])
-
-
-# Configuration du logging
-logging.basicConfig(level=logging.DEBUG)
-
-@app.get("/")
-def read_root():
-    return {"message": "Bienvenue dans l'application Chatbot FastAPI"}
-
-@app.post("/chatbot/{prompt}")
-async def chatbot(prompt: str):
-    if "weather" in prompt.lower():
-        city_name = prompt.split("weather")[1].strip()
-        weather_data = get_weather_data(city_name)
-        if weather_data:
-            weather_response = f"La météo à {city_name} est actuellement {weather_data[10]} avec une température minimale de {weather_data[3]}°C et maximale de {weather_data[4]}°C."
-            payload["text"] = weather_response
-        else:
-            payload["text"] = f"Je n'ai pas pu trouver les données météorologiques pour {city_name}."
-    else:
-        payload["text"] = prompt
-
-    response = requests.post(url, json=payload, headers=headers)
-    result = json.loads(response.text)
-    rp = result['meta']
-    return (rp['generated_text'])
 
 # @app.on_event("startup")
 # async def startup_event():
