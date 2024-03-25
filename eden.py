@@ -7,7 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from meteofrance_api import MeteoFranceClient
 import base64
 
-from fonctions import get_weather_data
+# from fonctions import get_weather_data
 from villes import cities, meteo
 
 app = FastAPI()
@@ -52,21 +52,6 @@ print(result['openai']['generated_text'])
 
 
 
-# URL de l'API
-url = "https://api.edenai.run/v2/audio/text_to_speech"
-payload = {
-    "providers": "google,amazon", "language": "en-US",
-    "option": "MALE",
-    "text": "this is a test",
-    "fallback_providers": ""
-}
-response = requests.post(url, json=payload, headers=headers)
-
-result = json.loads(response.text)
-encoded = base64.b64encode(result)
-print(encoded)
-encoded
-print(result['google']['audio'])
 
 
 # Configuration du logging

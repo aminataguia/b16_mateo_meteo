@@ -3,10 +3,15 @@ from meteofrance_api import MeteoFranceClient
 
 from connexion import host, port, password, user, dbname
 from villes import cities
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream:recup.py
 =======
 from fonctions import get_db_connection, inserer_donnes, get_forecast_for_city, create_table, get_weather_data
 >>>>>>> Stashed changes:main.py
+=======
+
+from fonctions import get_db_connection, inserer_donnes, get_forecast_for_city, create_table #get_weather_data
+>>>>>>> Stashed changes
 
 # Connect to the PostgreSQL database
 conn = psycopg2.connect(
@@ -91,6 +96,7 @@ print("Fin de la connexion")
         
 # je souhaite connecter la dt contenue dans le client meteo france pour la mettre dans mon serveur sql  ok
 # j'aimerais bien convertir le language sql en python 
+<<<<<<< Updated upstream
 # je souhaite separer mon code on plusieur fichier qui sapelle 
 # mettre a jour toute les 4-6 heure condition qui verifie que les taches planifier sont deja crée les chrone en fonctions de l'environnement ou il est 
 <<<<<<< Updated upstream:recup.py
@@ -99,3 +105,9 @@ print("Fin de la connexion")
 # ajout du bulletin meteo
 # ajout de la voix  
 >>>>>>> Stashed changes:main.py
+=======
+# je souhaite separer mon code on plusieur fichier qui sapelle  ok 
+# mettre a jour toute les 4-6 heure condition qui verifie que les taches planifier sont deja crée les chrone en fonctions de l'environnement ou il est 
+# ajout du bulletin meteo
+# ajout de la voix  
+>>>>>>> Stashed changes
