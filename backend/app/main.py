@@ -1,6 +1,13 @@
 import psycopg2
 from meteofrance_api import MeteoFranceClient
+import os
+import sys
+parent_directory = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 
+# Add the parent directory to sys.path
+sys.path.append(parent_directory)
+
+# Now you can import your module
 from connexion import host, port, password, user, dbname
 from villes import cities
 import datetime
