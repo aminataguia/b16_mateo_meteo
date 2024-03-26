@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>City Weather Selection</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="center">
+        <form id="cityForm">
+            <select id="citySelect" onchange="sendCitySelection()">
+                <option selected="selected" value="">Select a City</option>
+                <option value="Montpellier">Montpellier</option>
+                <option value="Paris">Paris</option>
+                <option value="Lyon">Lyon</option>
+                <!-- Add more cities as needed -->
+            </select>
+        </form>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>

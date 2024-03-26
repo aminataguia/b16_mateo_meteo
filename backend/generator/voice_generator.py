@@ -4,6 +4,7 @@ import httpx
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 import sys
+
 parent_directory = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 
 # Add the parent directory to sys.path
@@ -12,6 +13,12 @@ sys.path.append(parent_directory)
 # Now you can import your module
 from connexion import host, port, password, user, dbname
 from meteofrance_api import MeteoFranceClient
+import os
+
+# Append the directory containing your module to PYTHONPATH
+sys.path.append("..")
+
+# Now you can import your module
 from fonctions import get_forecast_for_city
 
 
