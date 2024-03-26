@@ -1,6 +1,7 @@
 
 import psycopg2
 from meteofrance_api import MeteoFranceClient
+import datetime
 from connexion import host, port, password, user, dbname
 from villes import cities
 
@@ -54,3 +55,81 @@ def inserer_donnes(conn, city_name, dt, min_temp, max_temp, min_humidity, max_hu
             conn.commit()
         except Exception as e:
             print(f"Erreur lors de l'insertion des données pour {city_name}: {e}")
+
+
+
+def get_forecast_for_city(city_name):
+    # Obtenir la connexion à la base de données
+    conn = get_db_connection()
+    
+    # Créer un curseur
+    with conn.cursor() as cursor:
+        # Requête SQL pour récupérer les données pour la ville spécifiée
+        query = """
+        SELECT * FROM meteo_forecast
+        WHERE city_name = %s;
+        """
+        try:
+            # Exécuter la requête avec le paramètre de la ville
+            cursor.execute(query, (city_name,))
+            # Récupérer les résultats
+            rows = cursor.fetchall()
+            # Fermer la connexion
+            conn.close()
+            # Renvoyer les résultats
+            return rows
+        except Exception as e:
+            print(f"Erreur lors de la récupération des données pour {city_name}: {e}")
+            return None
+
+# Exemple d'utilisation de la fonction
+if __name__ == "__main__":
+    city_name = "Paris"
+    forecast_data = get_forecast_for_city(city_name)
+    if forecast_data:
+        for row in forecast_data:
+            print(row)
+    else:
+        print("Aucune donnée trouvée pour la ville spécifiée.")
+
+def inserer_donnes(conn, city_name, dt, min_temp, max_temp, min_humidity, max_humidity, precipitation, uv, weather_icon, weather_desc, sunrise, sunset):
+    with conn.cursor() as cursor:
+        # Convertir le timestamp Unix en date
+        dt_date = datetime.utcfromtimestamp(dt).strftime('%Y-%m-%d')
+        sunrise_date = datetime.utcfromtimestamp(sunrise).strftime('%Y-%m-%d')
+        sunset_date = datetime.utcfromtimestamp(sunset).strftime('%Y-%m-%d')
+        
+        query = """
+        INSERT INTO meteo_forecast (city_name, dt, min_temp, max_temp, min_humidity, max_humidity, precipitation, uv, weather_icon, weather_desc, sunrise, sunset)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+        """
+        try:
+            cursor.execute(query, (city_name, dt_date, min_temp, max_temp, min_humidity, max_humidity, precipitation, uv, weather_icon, weather_desc, sunrise_date, sunset_date))
+            conn.commit()
+        except Exception as e:
+            print(f"Erreur lors de l'insertion des données pour {city_name}: {e}")
+
+def get_forecast_for_city(city_name):
+    # Obtenir la connexion à la base de données
+    conn = get_db_connection()
+    
+    # Créer un curseur
+    with conn.cursor() as cursor:
+        # Requête SQL pour récupérer les données pour la ville spécifiée
+        query = """
+        SELECT * FROM meteo_forecast
+        WHERE city_name = %s;
+        """
+        try:
+            # Exécuter la requête avec le paramètre de la ville
+            cursor.execute(query, (city_name,))
+            # Récupérer les résultats
+            rows = cursor.fetchall()
+            # Fermer la connexion
+            conn.close()
+            # Renvoyer les résultats
+            return rows
+        except Exception as e:
+            print(f"Erreur lors de la récupération des données pour {city_name}: {e}")
+            return None
+get_forecast_for_city("Montpellier")
