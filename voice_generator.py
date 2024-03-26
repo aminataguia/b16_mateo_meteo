@@ -6,6 +6,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from meteofrance_api import MeteoFranceClient
 import base64
+import httpx
 
 from villes import cities, meteo
 
@@ -27,7 +28,6 @@ provider = "meta"
 headers = {
     "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiMWI0MDFiNTQtNDA3ZS00YjliLWE2ZjQtODdhYzE2M2U0YTY3IiwidHlwZSI6ImFwaV90b2tlbiJ9.E4p5OS5QLYy2Tj7GTm-t9sWVsDA8UXUyKbHX1dUHE7U"
 }
-
 url = "https://api.edenai.run/v2/text/generation"
 
 # bulletin pour renvoyer la meteo en print a l'aide du client !!!
@@ -88,18 +88,47 @@ async def weather_bulletin(city: str):
 
     # Return the generated text
     return {"generated_text": generated_text}
+def get_forecast_for_city(city):
+    # This function should be replaced with actual logic to fetch weather forecast
+    return f"La météo à {city} est ensoleillée avec une température de 20°C."
+
 @app.get("/bulletin_audio/{city}")
 async def bulletin_audio(city: str):
+    # Generate weather forecast bulletin
+    bulletin_text = get_forecast_for_city(city)
+
+    # Convert text to speech
     url_speech = "https://api.edenai.run/v2/audio/text_to_speech"
+    headers = {
+        "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiMWI0MDFiNTQtNDA3ZS00YjliLWE2ZjQtODdhYzE2M2U0YTY3IiwidHlwZSI6ImFwaV90b2tlbiJ9.E4p5OS5QLYy2Tj7GTm-t9sWVsDA8UXUyKbHX1dUHE7U"
+    }
     payload_speech = {
-        "providers": "google,amazon", "language": "fr-FR",
+        "providers": "google,amazon",
+        "language": "fr-FR",
         "option": "FEMALE",
-        "text": weather_bulletin(city),
+        "text": bulletin_text,
         "fallback_providers": ""
-          }
-    weather_bulletin(city: str)
-    response = requests.post(url_speech, json=payload_speech, headers=headers)
-    
+    }
+    async with httpx.AsyncClient() as client:
+        response = await client.post(url_speech, json=payload_speech, headers=headers)
+
+    if response.status_code == 200:
+        result = response.json()
+        audio_data = result.get('google', {}).get('audio')
+        if audio_data:
+            audio_bytes = base64.b64decode(audio_data)
+            # Save the audio file
+            with open("audio.mp3", "wb") as audio_file:
+                audio_file.write(audio_bytes)
+            print("Fichier audio généré avec succès : audio.mp3")
+            return {"message": "Fichier audio généré avec succès : audio.mp3"}
+        else:
+            print("Aucune donnée audio disponible dans la réponse.")
+            raise HTTPException(status_code=400, detail="Aucune donnée audio disponible dans la réponse.")
+    else:
+        print(f"Erreur lors de la requête : {response.status_code} - {response.text}")
+        raise HTTPException(status_code=500, detail="Erreur lors de la requête à l'API de conversion en parole.")
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="127.0.0.1", port=8001)
