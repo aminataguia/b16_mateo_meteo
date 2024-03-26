@@ -133,3 +133,68 @@ def get_forecast_for_city(city_name):
             print(f"Erreur lors de la récupération des données pour {city_name}: {e}")
             return None
 get_forecast_for_city("Montpellier")
+
+
+
+
+
+
+
+
+
+# url = "https://api.edenai.run/v2/text/generation"
+
+# # bulletin pour renvoyer la meteo en print a l'aide du client !!!
+# payload = {
+#     "providers": "openai,cohere",
+#     "text": f"fait moi un bulletin meteo sous forme de phrase  {get_forecast_for_city('Montpellier')}",
+#     "temperature": 0.2,
+#     "max_tokens": 250,
+#     "fallback_providers": ""
+# }
+# response = requests.post(url, json=payload, headers=headers)
+# result = json.loads(response.text)
+# print(result['openai']['generated_text'])
+
+# # Code pour generer un audio
+# resultat = result['openai']['generated_text']
+# url_speech = "https://api.edenai.run/v2/audio/text_to_speech"
+# payload_speech = {
+#     "providers": "google,amazon", "language": "fr-FR",
+#     "option": "FEMALE",
+#     "text": resultat,
+#     "fallback_providers": ""
+# }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
