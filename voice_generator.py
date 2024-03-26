@@ -1,16 +1,12 @@
-import json
-import requests
-import time
-import logging
-from fastapi import FastAPI, HTTPException
-from fastapi.middleware.cors import CORSMiddleware
-from meteofrance_api import MeteoFranceClient
+import os
 import base64
 import httpx
+from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 
-from villes import cities, meteo
-
+from meteofrance_api import MeteoFranceClient
 from fonctions import get_forecast_for_city
+
 app = FastAPI()
 
 # Configuration CORS
@@ -23,85 +19,36 @@ app.add_middleware(
 )
 
 # Configuration de l'API externe
-url = "https://api.edenai.run/v2/text/chat"
-provider = "meta"
+API_KEY = os.getenv("EDENAI_API_KEY")
 headers = {
-    "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiMWI0MDFiNTQtNDA3ZS00YjliLWE2ZjQtODdhYzE2M2U0YTY3IiwidHlwZSI6ImFwaV90b2tlbiJ9.E4p5OS5QLYy2Tj7GTm-t9sWVsDA8UXUyKbHX1dUHE7U"
+    "Authorization": f"Bearer {API_KEY}"
 }
-url = "https://api.edenai.run/v2/text/generation"
 
-# bulletin pour renvoyer la meteo en print a l'aide du client !!!
-payload = {
-    "providers": "openai,cohere",
-    "text": f"fait moi un bulletin meteo sous forme de phrase  {get_forecast_for_city('Montpellier')}",
-    "temperature": 0.2,
-    "max_tokens": 250,
-    "fallback_providers": ""
-}
-response = requests.post(url, json=payload, headers=headers)
-result = json.loads(response.text)
-print(result['openai']['generated_text'])
-
-# Code pour generer un audio
-resultat = result['openai']['generated_text']
-url_speech = "https://api.edenai.run/v2/audio/text_to_speech"
-payload_speech = {
-    "providers": "google,amazon", "language": "fr-FR",
-    "option": "FEMALE",
-    "text": resultat,
-    "fallback_providers": ""
-}
-def text_to_speech():
-    response = requests.post(url_speech, json=payload_speech, headers=headers)
-
-    if response.status_code == 200:
-        result = response.json()
-        audio_data = result.get('google', {}).get('audio')
-        if audio_data:
-            audio_bytes = base64.b64decode(audio_data)
-            with open("audio.mp3", "wb") as audio_file:
-                audio_file.write(audio_bytes)
-            print("Fichier audio généré avec succès : audio.mp3")
-        else:
-            print("Aucune donnée audio disponible dans la réponse.")
-    else:
-        print(f"Erreur lors de la requête : {response.status_code} - {response.text}")
-
-text_to_speech()
-
+# Endpoint to generate weather bulletin
 @app.get("/weather-bulletin/{city}")
 async def weather_bulletin(city: str):
     url = "https://api.edenai.run/v2/text/generation"
-    headers = {
-        "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiMWI0MDFiNTQtNDA3ZS00YjliLWE2ZjQtODdhYzE2M2U0YTY3IiwidHlwZSI6ImFwaV90b2tlbiJ9.E4p5OS5QLYy2Tj7GTm-t9sWVsDA8UXUyKbHX1dUHE7U"
-    }
     payload = {
         "providers": "openai,cohere",
-        "text": f"fait moi un bulletin météo sous forme de phrase {get_forecast_for_city(city)}",
+        "text": f"fait moi un bulletin météo sous forme de phrase {get_forecast_for_city(city)}, noublie pas d'indiquer la température et de rappeler le nom de la ville et le jours de la prediction",
         "temperature": 0.2,
         "max_tokens": 250,
         "fallback_providers": ""
     }
-    response = requests.post(url, json=payload, headers=headers)
-    result = json.loads(response.text)
-    generated_text = result['openai']['generated_text']
+    async with httpx.AsyncClient() as client:
+        response = await client.post(url, json=payload, headers=headers)
+    if response.status_code == 200:
+        result = response.json()
+        generated_text = result['openai']['generated_text']
+        return {"generated_text": generated_text}
+    else:
+        raise HTTPException(status_code=500, detail="Erreur lors de la requête à l'API de génération de texte.")
 
-    # Return the generated text
-    return {"generated_text": generated_text}
-def get_forecast_for_city(city):
-    # This function should be replaced with actual logic to fetch weather forecast
-    return f"La météo à {city} est ensoleillée avec une température de 20°C."
-
+# Endpoint to generate audio from weather bulletin
 @app.get("/bulletin_audio/{city}")
 async def bulletin_audio(city: str):
-    # Generate weather forecast bulletin
     bulletin_text = get_forecast_for_city(city)
-
-    # Convert text to speech
     url_speech = "https://api.edenai.run/v2/audio/text_to_speech"
-    headers = {
-        "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiMWI0MDFiNTQtNDA3ZS00YjliLWE2ZjQtODdhYzE2M2U0YTY3IiwidHlwZSI6ImFwaV90b2tlbiJ9.E4p5OS5QLYy2Tj7GTm-t9sWVsDA8UXUyKbHX1dUHE7U"
-    }
     payload_speech = {
         "providers": "google,amazon",
         "language": "fr-FR",
@@ -111,7 +58,6 @@ async def bulletin_audio(city: str):
     }
     async with httpx.AsyncClient() as client:
         response = await client.post(url_speech, json=payload_speech, headers=headers)
-
     if response.status_code == 200:
         result = response.json()
         audio_data = result.get('google', {}).get('audio')
@@ -120,13 +66,10 @@ async def bulletin_audio(city: str):
             # Save the audio file
             with open("audio.mp3", "wb") as audio_file:
                 audio_file.write(audio_bytes)
-            print("Fichier audio généré avec succès : audio.mp3")
             return {"message": "Fichier audio généré avec succès : audio.mp3"}
         else:
-            print("Aucune donnée audio disponible dans la réponse.")
             raise HTTPException(status_code=400, detail="Aucune donnée audio disponible dans la réponse.")
     else:
-        print(f"Erreur lors de la requête : {response.status_code} - {response.text}")
         raise HTTPException(status_code=500, detail="Erreur lors de la requête à l'API de conversion en parole.")
 
 if __name__ == "__main__":
