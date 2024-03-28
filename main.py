@@ -1,69 +1,38 @@
-import psycopg2
-from meteofrance_api import MeteoFranceClient
-
-from connexion import host, port, password, user, dbname
+# main.py
+from db import get_db_connection
+from fonctions import create_table, inserer_donnes, get_forecast_for_city
 from villes import cities
-import datetime
 
-from fonctions import get_db_connection, inserer_donnes, get_forecast_for_city, create_table
-conn, cur = db.init_db_conn(host, port, password, user, dbname)
-db.create_table_si_existe_pas(conn, cur)
+def main():
+    conn = get_db_connection()
+    with conn.cursor() as cursor:
+        create_table(cursor)
+        conn.commit()
 
-for c in cities_str:
-    co = meteo_api.get_city_object(c)
-    daily_fc = meteo_api.take_daily_fc(co)
+    for city_name in cities:
+        forecast = get_forecast_for_city(city_name)
+        if forecast:
+            print(forecast)
+            for day in forecast.daily_forecast:
+                # Extraire les valeurs de chaque jour de prévision
+                dt = day['dt']
+                min_temp = day['T']['min']
+                max_temp = day['T']['max']
+                min_humidity = day['humidity']['min']
+                max_humidity = day['humidity']['max']
+                precipitation = day['precipitation']['24h']
+                uv = day['uv']
+                weather_icon = day['weather12H']['icon'] if day['weather12H'] else None
+                weather_desc = day['weather12H']['desc'] if day['weather12H'] else None
+                sunrise = day['sun']['rise']
+                sunset = day['sun']['set']
 
-    if not db.prediction_already_saved(conn, cur, daily_fc):
-        db.save_daily_fc(conn, cur, co daily_fc)
-    else:
-        print("pas besoin de sauvegarder ca ")
-    sentence = write_prediction_sentence(daily_fc)
-    speak_sentence(sentence)
+                # Insérer les données dans la base de données
+                inserer_donnes(conn, city_name, dt, min_temp, max_temp, min_humidity, max_humidity, precipitation, uv, weather_icon, weather_desc, sunrise, sunset)
 
-cur.close()
-conn.close()
-# Connect to the PostgreSQL database
-conn = psycopg2.connect(
-    dbname=dbname,
-    user=user,
-    password=password,
-    host=host,
-    port=port
-)
-print("Connexion à la base de données PostgreSQL réussie !")
+    conn.close()
+    print("Fin de la connexion")
 
+if __name__ == "__main__":
+    main()
 
-# Exécution de la commande SQL pour créer la table
-with conn.cursor() as cursor:
-    create_table(cursor)
-    conn.commit()
-
-client = MeteoFranceClient()
-
-for city_name in cities:
-    list_places = client.search_places(city_name)
-    if list_places:
-        my_place = list_places[0]
-        forecast = client.get_forecast_for_place(my_place)
-
-        for day in forecast.daily_forecast:
-            dt = day['dt']
-            min_temp = day['T']['min']
-            max_temp = day['T']['max']
-            min_humidity = day['humidity']['min']
-            max_humidity = day['humidity']['max']
-            precipitation = day['precipitation']['24h']
-            uv = day['uv']
-            weather_icon = day['weather12H']['icon'] if day['weather12H'] else None
-            weather_desc = day['weather12H']['desc'] if day['weather12H'] else None
-            sunrise = day['sun']['rise']
-            sunset = day['sun']['set']
-
-            # Insérer les données dans la base de données
-            inserer_donnes(conn, city_name, dt, min_temp, max_temp, min_humidity, max_humidity, precipitation, uv, weather_icon, weather_desc, sunrise, sunset)
-
-# Fermeture de la connexion à la base de données
-conn.close()
-print("Fin de la connexion")
-
-# je souhaite que mes requete soit faite dirrectement avec le client api et non en dur 

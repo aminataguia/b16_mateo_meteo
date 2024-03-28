@@ -19,14 +19,17 @@ app.add_middleware(
 )
 
 # Configuration de l'API externe
-API_KEY = os.getenv("EDENAI_API_KEY")
+API_KEY = os.getenv("API_KEY")
 headers = {
     "Authorization": f"Bearer {API_KEY}"
 }
-
+print(headers)
 # Endpoint to generate weather bulletin
-@app.get("/weather-bulletin/{city}")
+@app.post("/weather-bulletin/{city}")
 async def weather_bulletin(city: str):
+
+
+
     url = "https://api.edenai.run/v2/text/generation"
     payload = {
         "providers": "openai,cohere",
@@ -45,7 +48,7 @@ async def weather_bulletin(city: str):
         raise HTTPException(status_code=500, detail="Erreur lors de la requête à l'API de génération de texte.")
 
 # Endpoint to generate audio from weather bulletin
-@app.get("/bulletin_audio/{city}")
+@app.post("/bulletin_audio/{city}")
 async def bulletin_audio(city: str):
     bulletin_text = get_forecast_for_city(city)
     url_speech = "https://api.edenai.run/v2/audio/text_to_speech"
