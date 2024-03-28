@@ -5,8 +5,23 @@ from connexion import host, port, password, user, dbname
 from villes import cities
 import datetime
 
-from fonctions import get_db_connection, inserer_donnes, get_forecast_for_city, create_table, inserer_donnes
+from fonctions import get_db_connection, inserer_donnes, get_forecast_for_city, create_table
+conn, cur = db.init_db_conn(host, port, password, user, dbname)
+db.create_table_si_existe_pas(conn, cur)
 
+for c in cities_str:
+    co = meteo_api.get_city_object(c)
+    daily_fc = meteo_api.take_daily_fc(co)
+
+    if not db.prediction_already_saved(conn, cur, daily_fc):
+        db.save_daily_fc(conn, cur, co daily_fc)
+    else:
+        print("pas besoin de sauvegarder ca ")
+    sentence = write_prediction_sentence(daily_fc)
+    speak_sentence(sentence)
+
+cur.close()
+conn.close()
 # Connect to the PostgreSQL database
 conn = psycopg2.connect(
     dbname=dbname,

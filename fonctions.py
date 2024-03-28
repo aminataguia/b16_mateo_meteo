@@ -19,7 +19,6 @@ def get_db_connection():
     )
     print("Connexion à la base de données PostgreSQL réussie !")
     return conn
-
 # Je veux crée un table dans ma base sql
 def create_table(cursor):
     cursor.execute("""
@@ -38,7 +37,7 @@ CREATE TABLE IF NOT EXISTS meteo_forecast (
     sunrise BIGINT,
     sunset BIGINT
 );
-""")
+""") # CONN.COMMIT pour savoir les erreur 
 
 # Je veux inserer de la donner dans ma base sql en requetant l'api france meteo
 def inserer_donnes(conn, city_name, dt, min_temp, max_temp, min_humidity, max_humidity, precipitation, uv, weather_icon, weather_desc, sunrise, sunset):

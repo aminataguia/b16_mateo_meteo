@@ -10,6 +10,7 @@ def main():
     for city_name in cities:
         forecast = get_forecast_for_city(city_name)
         if forecast:
+            print(forecast)
             for day in forecast.daily_forecast:
                 # Extraire les valeurs de chaque jour de prévision
                 dt = day['dt']
