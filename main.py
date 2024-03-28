@@ -13,19 +13,20 @@ def main():
         forecast = get_forecast_for_city(city_name)
         if forecast:
             print(forecast)
-            for day in forecast.daily_forecast:
+            for day in forecast: # Ici, nous itérons directement sur la liste retournée
                 # Extraire les valeurs de chaque jour de prévision
-                dt = day['dt']
-                min_temp = day['T']['min']
-                max_temp = day['T']['max']
-                min_humidity = day['humidity']['min']
-                max_humidity = day['humidity']['max']
-                precipitation = day['precipitation']['24h']
-                uv = day['uv']
-                weather_icon = day['weather12H']['icon'] if day['weather12H'] else None
-                weather_desc = day['weather12H']['desc'] if day['weather12H'] else None
-                sunrise = day['sun']['rise']
-                sunset = day['sun']['set']
+                # Supposons que chaque élément de la liste est un dictionnaire contenant les informations de prévision pour un jour
+                dt = day[0]
+                min_temp = day[1]
+                max_temp = day[2]
+                min_humidity = day[3]
+                max_humidity = day[4]
+                precipitation = day[5]
+                uv = day[6]
+                weather_icon = day[7] 
+                weather_desc = day[8]
+                sunrise = day[9]
+                sunset = day[10]
 
                 # Insérer les données dans la base de données
                 inserer_donnes(conn, city_name, dt, min_temp, max_temp, min_humidity, max_humidity, precipitation, uv, weather_icon, weather_desc, sunrise, sunset)
@@ -35,4 +36,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
