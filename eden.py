@@ -1,14 +1,11 @@
-import json
-import requests
-import time
-import logging
+import base64
+import httpx
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from meteofrance_api import MeteoFranceClient
-import base64
+import json
 
-from fonctions import get_weather_data
-from villes import cities, meteo
+from meteofrance_api import MeteoFranceClient
+from fonctions import get_forecast_for_city
 
 app = FastAPI()
 
@@ -22,114 +19,59 @@ app.add_middleware(
 )
 
 # Configuration de l'API externe
-url = "https://api.edenai.run/v2/text/chat"
-provider = "meta"
 headers = {
     "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiMWI0MDFiNTQtNDA3ZS00YjliLWE2ZjQtODdhYzE2M2U0YTY3IiwidHlwZSI6ImFwaV90b2tlbiJ9.E4p5OS5QLYy2Tj7GTm-t9sWVsDA8UXUyKbHX1dUHE7U"
 }
-payload = {
-    "providers": provider,
-    "text": "",
-    "chatbot_global_action": f"Act like an assistant with this :{provider}",
-    "previous_history": [],
-    "temperature": 0.5,
-    "max_tokens": 50,
-    "fallback_providers": "",
-}
-url = "https://api.edenai.run/v2/text/generation"
+# Endpoint to generate weather bulletin
+@app.get("/weather-bulletin/{city}")
+async def weather_bulletin(city: str):
 
-# bulletin pour renvoyer la meteo en print 
-payload = {
-    "providers": "openai,cohere",
-    "text": f"fait moi un bulletin meteo sous forme de phrase  {json.dumps(meteo)}",
-    "temperature": 0.2,
-    "max_tokens": 250,
-    "fallback_providers": ""
-}
-response = requests.post(url, json=payload, headers=headers)
-result = json.loads(response.text)
-print(result['openai']['generated_text'])
-resultat = result['openai']['generated_text']
-url_speech = "https://api.edenai.run/v2/audio/text_to_speech"
-payload_speech = {
-    "providers": "google,amazon", "language": "fr-FR",
-    "option": "FEMALE",
-    "text": resultat,
-    "fallback_providers": ""
-}
-def text_to_speech():
-    response = requests.post(url_speech, json=payload_speech, headers=headers)
-
+    url = "https://api.edenai.run/v2/text/generation"
+    payload = {
+        "providers": "openai,cohere",
+        "text": f"fait moi un bulletin météo sous forme de phrase {get_forecast_for_city(city)}, noublie pas d'indiquer la température et de rappeler le nom de la ville et le jours de la prediction",
+        "temperature": 0.2,
+        "max_tokens": 250,
+        "fallback_providers": ""
+    }
+    async with httpx.AsyncClient() as client:
+        response = await client.post(url, json=payload, headers=headers)
     if response.status_code == 200:
         result = response.json()
-        audio_data = result.get('google', {}).get('audio')
-        if audio_data:
-            audio_bytes = base64.b64decode(audio_data)
-            with open("audio.mp3", "wb") as audio_file:
-                audio_file.write(audio_bytes)
-            print("Fichier audio généré avec succès : audio.mp3")
+        generated_text = result['openai']['generated_text']
+        # return {"generated_text": generated_text}
+
+        url_speech = "https://api.edenai.run/v2/audio/text_to_speech"
+        payload_speech = {
+            "providers": "google,amazon",
+            "language": "fr-FR",
+            "option": "FEMALE",
+            "text": json.dumps(generated_text), # Convert the dictionary to a JSON string
+            "fallback_providers": ""
+        }
+        async with httpx.AsyncClient() as client:
+            response = await client.post(url_speech, json=payload_speech, headers=headers)
+        if response.status_code == 200:
+            result = response.json()
+            audio_data = result.get('google', {}).get('audio')
+            if audio_data:
+                audio_bytes = base64.b64decode(audio_data)
+                # Save the audio file
+                with open("audio.mp3", "wb") as audio_file:
+                    audio_file.write(audio_bytes)
+                return {"message": "Fichier audio généré avec succès : audio.mp3"}
+            else:
+                raise HTTPException(status_code=400, detail="Aucune donnée audio disponible dans la réponse.")
         else:
-            print("Aucune donnée audio disponible dans la réponse.")
+            raise HTTPException(status_code=500, detail="Erreur lors de la requête à l'API de conversion en parole.")
     else:
-        print(f"Erreur lors de la requête : {response.status_code} - {response.text}")
+        raise HTTPException(status_code=500, detail="Erreur lors de la requête à l'API de génération de texte.")
 
-text_to_speech()
-
-# URL de l'API
-url = "https://api.edenai.run/v2/audio/text_to_speech"
-payload = {
-    "providers": "google,amazon", "language": "en-US",
-    "option": "MALE",
-    "text": "this is a test",
-    "fallback_providers": ""
-}
-response = requests.post(url, json=payload, headers=headers)
-
-result = json.loads(response.text)
-encoded = base64.b64encode(result)
-print(encoded)
-encoded
-print(result['google']['audio'])
-
-
-# Configuration du logging
-logging.basicConfig(level=logging.DEBUG)
-
-@app.get("/")
-def read_root():
-    return {"message": "Bienvenue dans l'application Chatbot FastAPI"}
-
-@app.post("/chatbot/{prompt}")
-async def chatbot(prompt: str):
-    if "weather" in prompt.lower():
-        city_name = prompt.split("weather")[1].strip()
-        weather_data = get_weather_data(city_name)
-        if weather_data:
-            weather_response = f"La météo à {city_name} est actuellement {weather_data[10]} avec une température minimale de {weather_data[3]}°C et maximale de {weather_data[4]}°C."
-            payload["text"] = weather_response
-        else:
-            payload["text"] = f"Je n'ai pas pu trouver les données météorologiques pour {city_name}."
-    else:
-        payload["text"] = prompt
-
-    response = requests.post(url, json=payload, headers=headers)
-    result = json.loads(response.text)
-    rp = result['meta']
-    return (rp['generated_text'])
-
-# @app.on_event("startup")
-# async def startup_event():
-#     client = MeteoFranceClient()
-#     list_places = client.search_places("Montpellier")
-#     if list_places:
-#         my_place = list_places[0]
-#         my_place_weather_forecast = client.get_forecast_for_place(my_place)
-#         my_place_daily_forecast = my_place_weather_forecast.daily_forecast
-#         print(my_place_daily_forecast)
-#     else:
-#         print("Aucun lieu trouvé pour la recherche.")
 
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="127.0.0.1", port=8001)
+
+
+
 

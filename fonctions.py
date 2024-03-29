@@ -33,6 +33,43 @@ CREATE TABLE IF NOT EXISTS meteo_forecast (
     sunset BIGINT
 );
 """)
+def main():
+    try:
+        # Establish a connection to the PostgreSQL database
+        connection = psycopg2.connect(
+            dbname="your_database_name",
+            user="your_username",
+            password="your_password",
+            host="your_host",
+            port="your_port"
+        )
+        cursor = connection.cursor()
+
+        # Call the recup_serveur function to fetch and print all rows from the meteo_forecast table
+        recup_serveur(cursor)
+
+        # Close the cursor and connection
+        cursor.close()
+        connection.close()
+        print("The PostgreSQL connection is closed")
+
+    except (Exception, psycopg2.Error) as error:
+        print("Error while fetching data from PostgreSQL", error)
+def recup_serveur(cursor):
+    cursor.execute("""
+    SELECT * FROM meteo_forecast;
+    """)
+    records = cursor.fetchall()
+    for row in records:
+        print(row)
+
+def recup_serveur(cursor):
+    cursor.execute("""
+    SELECT * FROM meteo_forecast;
+    """)
+    records = cursor.fetchall()
+    for row in records:
+        print(row)
 
 def get_forecast_for_city(city_name):
     client = MeteoFranceClient()
@@ -42,6 +79,8 @@ def get_forecast_for_city(city_name):
         forecast = client.get_forecast_for_place(my_place)
         return forecast
     return None
+
+
 
 def inserer_donnes(conn, city_name, dt, min_temp, max_temp, min_humidity, max_humidity, precipitation, uv, weather_icon, weather_desc, sunrise, sunset):
     with conn.cursor() as cursor:
