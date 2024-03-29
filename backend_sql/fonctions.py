@@ -63,14 +63,6 @@ def recup_serveur(cursor):
     for row in records:
         print(row)
 
-def recup_serveur(cursor):
-    cursor.execute("""
-    SELECT * FROM meteo_forecast;
-    """)
-    records = cursor.fetchall()
-    for row in records:
-        print(row)
-
 def get_forecast_for_city(city_name):
     client = MeteoFranceClient()
     list_places = client.search_places(city_name)
@@ -79,8 +71,6 @@ def get_forecast_for_city(city_name):
         forecast = client.get_forecast_for_place(my_place)
         return forecast
     return None
-
-
 
 def inserer_donnes(conn, city_name, dt, min_temp, max_temp, min_humidity, max_humidity, precipitation, uv, weather_icon, weather_desc, sunrise, sunset):
     with conn.cursor() as cursor:
@@ -93,30 +83,32 @@ def inserer_donnes(conn, city_name, dt, min_temp, max_temp, min_humidity, max_hu
             conn.commit()
         except Exception as e:
             print(f"Erreur lors de l'insertion des données pour {city_name}: {e}")
-def recup_serveur(conn, city_name, columns):
-    # Construct the SELECT query with the specified columns and a WHERE clause for the city name
-    query = f"SELECT {', '.join(columns)} FROM meteo_forecast WHERE city_name = %s;"
+import psycopg2
+
+def recup_serveur(conn, columns):
+    # Construct the SELECT query with the specified columns
+    query = f"SELECT {', '.join(columns)} FROM meteo_forecast;"
     
     with conn.cursor() as cursor:
         try:
-            cursor.execute(query, (city_name,))
+            cursor.execute(query)
             records = cursor.fetchall()
             for row in records:
                 print(row)
         except Exception as e:
-            print(f"Erreur lors de la récupération des données pour {city_name}: {e}")
+            print(f"Erreur lors de la récupération des données: {e}")
 
-# Adjusted main function to accept city_name as a parameter
-def main(city_name):
+# Example usage
+def main():
     try:
         # Establish a connection to the PostgreSQL database
         conn = get_db_connection()
         
         # Specify the columns you want to retrieve
-        columns = ["city_name", "dt", "min_temp", "max_temp", "min_humidity", "max_humidity", "precipitation", "uv", "weather_icon", "weather_desc", "sunrise", "sunset"]
+        columns = ["city_name, dt, min_temp, max_temp, min_humidity, max_humidity, precipitation, uv, weather_icon, weather_desc, sunrise, sunset"]
         
-        # Call the recup_serveur function with the city name and columns
-        recup_serveur(conn, city_name, columns)
+        # Call the recup_serveur function
+        recup_serveur(conn, columns)
         
         # Close the connection
         conn.close()
@@ -126,3 +118,4 @@ def main(city_name):
         print("Failed to read data from table", error)
 
 if __name__ == "__main__":
+    main()
