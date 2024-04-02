@@ -12,10 +12,10 @@ app = FastAPI()
 # Configuration CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], # Autorise toutes les origines
+    allow_origins=["*"],
     allow_credentials=True,
-    allow_methods=["*"], # Autorise toutes les méthodes HTTP
-    allow_headers=["*"], # Autorise tous les en-têtes
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 # Configuration de l'API externe
