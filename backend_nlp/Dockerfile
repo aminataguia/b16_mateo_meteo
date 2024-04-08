@@ -1,3 +1,4 @@
+
 # Utiliser une image Python officielle comme base
 FROM python:3.11-alpine
 
@@ -24,4 +25,4 @@ RUN pip install --no-cache-dir fastapi uvicorn requests psycopg2-binary httpx me
 EXPOSE 8000
 
 # Définir la commande à exécuter lors du démarrage du conteneur
-CMD ["uvicorn", "bulletin_voice:app", "--reload", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "main:app", "--reload", "--host", "0.0.0.0", "--port", "8000"]

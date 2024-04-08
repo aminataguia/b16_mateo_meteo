@@ -4,7 +4,7 @@ from fastapi import FastAPI, HTTPException, Response
 from fastapi.middleware.cors import CORSMiddleware
 import json
 from fastapi.responses import FileResponse
-from meteofrance_api import MeteoFranceClient
+
 from fonctions import get_forecast_for_city
 
 app = FastAPI()
@@ -83,4 +83,4 @@ async def weather_bulletin(city: str):
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="127.0.0.1", port=8001)
+    uvicorn.run(app, host="127.0.0.1", port=8000)

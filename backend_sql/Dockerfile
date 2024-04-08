@@ -11,4 +11,4 @@ COPY . /app
 RUN pip install meteofrance_api psycopg2-binary
 
 # Exécuter le script Python
-CMD ["python", "recup.py"]
+CMD CMD ["uvicorn", "bulletin_voice:app", "--reload", "--host", "0.0.0.0", "--port", "8000"]
