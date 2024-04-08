@@ -2,7 +2,6 @@
 import psycopg2
 from meteofrance_api import MeteoFranceClient
 from connexion import host, port, password, user, dbname
-from villes import cities
 
 def get_db_connection():
     conn = psycopg2.connect(
