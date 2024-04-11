@@ -76,8 +76,45 @@ def get_forecast_for_city(city_name):
     if list_places:
         my_place = list_places[0]
         forecast = client.get_forecast_for_place(my_place)
+        daily_forecast = forecast.daily_forecast
+        print(daily_forecast)
         return forecast
     return None
+def get_forecasts_for_cities(cities):
+    # Initialiser un dictionnaire pour stocker les prévisions
+    forecasts = {}
+    
+    # Créer une instance du client MeteoFrance
+    client = MeteoFranceClient()
+    
+    # Itérer sur chaque ville dans la liste des villes
+    for city_name in cities:
+        # Rechercher les lieux correspondant au nom de la ville
+        list_places = client.search_places(city_name)
+        
+        # Vérifier si au moins un lieu a été trouvé
+        if list_places:
+            # Prendre le premier lieu trouvé
+            my_place = list_places[0]
+            
+            # Obtenir la prévision météorologique pour ce lieu
+            forecast = client.get_forecast_for_place(my_place)
+            
+            # Ajouter la prévision au dictionnaire des prévisions
+            forecasts[city_name] = forecast
+    
+    # Retourner le dictionnaire contenant les prévisions pour toutes les villes
+    return forecasts
+
+# Exemple d'utilisation
+cities = ["Paris", "Lyon", "Marseille"]
+forecasts = get_forecasts_for_cities(cities)
+
+# Afficher les prévisions pour chaque ville
+for city, forecast in forecasts.items():
+    print(f"Prévision pour {city}: {forecast.daily_forecast}")
+
+
 
 
 
