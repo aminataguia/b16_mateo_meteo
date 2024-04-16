@@ -1,4 +1,26 @@
+# Ignorer les fichiers et dossiers spécifiques à chaque sous-dossier backend
+backend/backend_nlp/__pycache__/
+backend/backend_sql/__pycache__/
 
-__pycache__/fonctions.cpython-311.pyc
-__pycache__/villes.cpython-311.pyc
-*.mp3
+# Ignorer les fichiers temporaires et les fichiers de configuration spécifiques à l'environnement
+*.log
+*.tmp
+*.env
+
+# Ignorer les fichiers générés par les IDEs ou les éditeurs de texte
+.idea/
+.vscode/
+
+# Ignorer les fichiers et dossiers spécifiques à Docker
+backend/Dockerfiles/
+
+# Ignorer les fichiers et dossiers spécifiques au frontend
+frontend/node_modules/
+
+# Ignorer les fichiers et dossiers spécifiques à PowerShell
+backend/backend_sql/raffraichisseur_data.ps1
+
+# Ignorer les fichiers et dossiers spécifiques à Python
+backend/backend_sql/recup.py
+#ignorer les mp 3 
+**/*.mp3
