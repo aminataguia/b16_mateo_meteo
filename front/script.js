@@ -1,7 +1,7 @@
 document.getElementById('weather-form').addEventListener('submit', async function(event) {
     event.preventDefault();
     const city = document.getElementById('city').value;
-    const response = await fetch(`http://4.175.81.118:8000/weather-bulletin/${city}`, {
+    const response = await fetch(`http://52.136.157.6/:8000/weather-bulletin/${city}`, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',

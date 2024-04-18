@@ -26,3 +26,4 @@ EXPOSE 8000
 
 # Définir la commande à exécuter lors du démarrage du conteneur
 CMD ["uvicorn", "main:app", "--reload", "--host", "0.0.0.0", "--port", "8000"]
+# il sera accecible sur http://52.136.157.6:8000/docs
